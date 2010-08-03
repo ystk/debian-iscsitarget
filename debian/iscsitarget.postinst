@@ -1,0 +1,47 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+  configure)
+	if [ -f /etc/ietd.conf ]; then
+		mv -f /etc/ietd.conf /etc/iet/
+		echo "Moving config /etc/ietd.conf to new location /etc/iet/"
+	fi
+
+	if [ -f /etc/initiators.allow ]; then
+		mv -f /etc/initiators.allow /etc/iet/
+		echo "Moving config /etc/initiators.allow to new location /etc/iet/"
+	fi
+
+	if [ -f /etc/initiators.deny ]; then
+		mv -f /etc/initiators.deny /etc/iet/
+		echo "Moving config /etc/initiators.deny to new location /etc/iet/"
+	fi
+
+	# Clean up the mess created in the last upload, 1.4.20.1-2
+	if [ -d /etc/ietd ]; then
+		if [ -f /etc/ietd/ietd.conf ]; then
+			mv -f /etc/ietd/ietd.conf /etc/iet/
+		fi
+		if [ -f /etc/ietd/initiators.allow ]; then
+			mv -f /etc/ietd/initiators.allow /etc/iet/
+		fi
+		if [ -f /etc/ietd/initiators.deny ]; then
+			mv -f /etc/ietd/initiators.deny /etc/iet/
+		fi
+		rm -rf /etc/ietd/
+	fi
+  ;;
+  abort-upgrade|abort-remove|abort-deconfigure|triggered)
+  ;;
+  *)
+    echo "postinst called with unknown argument \`$1'" >&2
+    exit 1;
+  ;;
+esac
+
+
+#DEBHELPER#
+
+exit 0
