@@ -12,8 +12,6 @@
 # This has to be exported to make some magic below work.
 export DH_OPTIONS
 
-
-
 # get-orig-source target
 DEB_UPSTREAM_VERSION=$(shell dpkg-parsechangelog | sed -rne 's,^Version: ([^-]+).*,\1,p')
 
@@ -26,23 +24,18 @@ get-orig-source:
 non_epoch_version=$(shell echo $(KVERS) | perl -pe 's/^\d+://')
 
 PACKAGE=iscsitarget
-psource=iscsitarget-source
 pmodules = $(PACKAGE)-module-$(non_epoch_version)
 
 # DKMS package
 pdkms=iscsitarget-dkms
 
-MA_DIR ?= /usr/share/modass
--include $(MA_DIR)/include/generic.make
--include $(MA_DIR)/include/common-rules.make
+CFLAGS = `dpkg-buildflags --get CFLAGS`
+CFLAGS += -Wall
+CFLAGS += `dpkg-buildflags --get CPPFLAGS`
+LDFLAGS = `dpkg-buildflags --get LDFLAGS`
+export CFLAGS
+export LDFLAGS
 
-CFLAGS = -Wall -g
-
-ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
-	CFLAGS += -O0
-else
-	CFLAGS += -O2
-endif
 ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
 	INSTALL_PROGRAM += -s
 endif
@@ -75,6 +68,15 @@ kver_ge = $(shell [ $(KMAJ)$(KMIN)$(KREV) -ge $(1)$(2)$(3) ] && \
 	echo 1 || echo 0)
 kver_lk = $(shell [ `echo $(KERN_VER) | egrep $(1)` ] && echo 1 || echo 0)
 
+# Compatibility patch for kernels >= 2.6.36  <= 2.6.38
+ifeq ($(call kver_le,2,6,38),1)
+	PATCHES := $(PATCHES) compat-2.6.36-2.6.37.patch
+endif
+
+# Compatibility patch for kernels > 2.6.32 <= 2.6.35
+ifeq ($(call kver_le,2,6,35),1)
+	PATCHES := $(PATCHES) compat-2.6.33-2.6.35.patch
+endif
 
 # Compatibility patch for kernels <= 2.6.32
 ifeq ($(call kver_le,2,6,32),1)
@@ -199,36 +201,6 @@ install-indep:
 	dh_clean -k -i 
 	dh_installdirs -i
 	
-	# Create the directories to install the source into
-	dh_installdirs -p$(psource)  usr/src/modules/$(PACKAGE)
-	dh_installdirs -p$(psource)  usr/src/modules/$(PACKAGE)/debian
-	dh_installdirs -p$(psource)  usr/src/modules/$(PACKAGE)/include
-	dh_installdirs -p$(psource)  usr/src/modules/$(PACKAGE)/kernel
-	dh_installdirs -p$(psource)  usr/src/modules/$(PACKAGE)/patches
-	
-	# Copy only the driver source to the proper location
-	cp kernel/*  debian/$(psource)/usr/src/modules/$(PACKAGE)/kernel/
-	cp include/* debian/$(psource)/usr/src/modules/$(PACKAGE)/include/
-	cp patches/* debian/$(psource)/usr/src/modules/$(PACKAGE)/patches/
-	
-	# Copy the needed debian/ pieces to the proper location
-	cp debian/*-module-* \
-		debian/$(psource)/usr/src/modules/$(PACKAGE)/debian
-	cp debian/control.modules.in \
-		debian/$(psource)/usr/src/modules/$(PACKAGE)/debian/control.in
-	cp debian/rules \
-		debian/$(psource)/usr/src/modules/$(PACKAGE)/debian
-	cp debian/changelog \
-		debian/$(psource)/usr/src/modules/$(PACKAGE)/debian
-	cp debian/copyright \
-		debian/$(psource)/usr/src/modules/$(PACKAGE)/debian
-	
-	# install debian/ files
-	cd debian ; cp changelog control compat *.modules.in rules copyright $(psource)/usr/src/modules/$(PACKAGE)/debian
-	
-	# create toplevel module Makefile
-	echo "obj-m = kernel/" > debian/$(psource)/usr/src/modules/$(PACKAGE)/Makefile
-	
 	# For DKMS
 	# Create the directories to install the source into
 	dh_installdirs -p$(pdkms)  usr/src/$(PACKAGE)-$(DEB_UPSTREAM_VERSION)
@@ -263,12 +235,7 @@ install-indep:
 	
 	# Prepare dkms.conf from the dkms.conf.in template
 	sed "s/__VERSION__/$(DEB_UPSTREAM_VERSION)/g" debian/dkms.conf.in > debian/$(pdkms)/usr/src/$(PACKAGE)-$(DEB_UPSTREAM_VERSION)/dkms.conf
-
-
-	# tar the stuff
-	cd debian/$(psource)/usr/src/ ; tar cvjf iscsitarget.tar.bz2 modules ; rm -rf modules
-	
-	install -m 755 $(CURDIR)/debian/modass.iscsitarget-source $(CURDIR)/debian/$(psource)/usr/share/modass/overrides/iscsitarget-source
+	grep ^PATCH dkms.conf >> debian/$(pdkms)/usr/src/$(PACKAGE)-$(DEB_UPSTREAM_VERSION)/dkms.conf
 
 
 	dh_install -i
@@ -284,9 +251,6 @@ install-arch:
 	mkdir -p debian/iscsitarget/usr/share/lintian/overrides
 	cp debian/iscsitarget.overrides \
 		debian/iscsitarget/usr/share/lintian/overrides/iscsitarget
-	# Add sysctl tune knobs
-	install -D -m 644 debian/30-iscsitarget.conf \
-		debian/iscsitarget/etc/sysctl.d/30-iscsitarget.conf
 
 # Must not depend on anything. This is to be called by
 # binary-arch/binary-indep

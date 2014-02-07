@@ -1,3 +1,98 @@
+iscsitarget (1.4.20.2-10.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+
+  * Fixes ietadm not detecting inactive sessions (Closes: #687925).
+
+ -- Loic Dachary (OuoU) <loic@debian.org>  Mon, 17 Sep 2012 10:42:29 +0200
+
+iscsitarget (1.4.20.2-10) unstable; urgency=low
+
+  * [2bebbc2] don't prompt on modified conffiles.
+    Thanks to Andreas Beckmann (Closes: #661397)
+  * Upload to unstable
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Wed, 14 Mar 2012 01:06:13 +0530
+
+iscsitarget (1.4.20.2-9) experimental; urgency=low
+
+  * [7ad9219] Clean up old sysctl knob.
+    Thanks to Martin Braure de Calignon (Closes: #645582)
+  * [0802fff] Use corrent message type.
+    Thanks to Vincent Pelletier (Closes: #647923)
+  * [dcab13f] Drop unmaintained iscsitarget-source package
+  * [099cc1a] add quilt header to patch
+  * [93dc585] Fix LSB Headers
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Wed, 22 Feb 2012 18:39:35 +0530
+
+iscsitarget (1.4.20.2-8) experimental; urgency=low
+
+  * [735c872] Add patch to fix build on 3.2 kernels (Closes: #659560)
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Wed, 15 Feb 2012 22:01:15 +0530
+
+iscsitarget (1.4.20.2-7) unstable; urgency=low
+
+  * [6ea2c52] Patch clean-up
+  * [627d8e4] Enable hardened build flags.
+    Thanks to Moritz Muehlenhoff (Closes: #656867)
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Wed, 01 Feb 2012 00:43:21 +0530
+
+iscsitarget (1.4.20.2-6) unstable; urgency=low
+
+  * SVN 1.4.20@453 - Co-ordinated with upstream on the stability of the tree
+  * [494142b] Drop double installation of upstream changelog.
+    Thanks to Christian Pernegger (Closes: #633005)
+  * [71de4f8] Add package linux-headers to Recommends.
+    Thanks to George Shuklin (Closes: 636157, 628428)
+  * [8344c44] Add support to provide daemon options.
+    Thanks to Alfredo Sola, Robbert Rijkse (Closes: 609582, 545536)
+  * [8208ade] Drop debian/30-iscsitarget.conf. (Closes: 636497)
+    We should not play with kernel sysct knobs right from the package.
+    Setting those values will depend on a per machine basis
+  * [0e96f0e] Update Standards Version to 3.9.2. No changes required
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Sun, 07 Aug 2011 02:09:59 +0530
+
+iscsitarget (1.4.20.2-5) experimental; urgency=low
+
+  * Sync to 1.4.20 branch. This is equivalent of 1.4.20.3 and includes all
+    commits up till revision 1.4.20@453
+  * Add linux-headers packages to Suggests (Closes: #628428)
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Tue, 14 Jun 2011 09:30:01 +0530
+
+iscsitarget (1.4.20.2-4expr2) experimental; urgency=low
+
+  * Sync to 1.4.20 branch. This is equivalent of 1.4.20.3 and includes all
+    commits up till revision 1.4.20@445
+    (Closes: #618682, #622318, #610309)
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Tue, 26 Apr 2011 15:40:17 +0530
+
+iscsitarget (1.4.20.2-4) unstable; urgency=low
+
+  * Last upload was incorrect. Really upload to unstable now
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Sat, 12 Feb 2011 01:59:17 +0530
+
+iscsitarget (1.4.20.2-3) unstable; urgency=low
+
+  * Upload to unstable
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Thu, 10 Feb 2011 20:13:59 +0530
+
+iscsitarget (1.4.20.2-2) experimental; urgency=low
+
+  [ Michael Prokop ]
+  * NIPQUAD definition has been removed in kernel 2.6.36,
+    adjust kernel/conn.c accordingly so iscsitarget compiles
+    against kernel 2.6.36. (Closes: #604641)
+
+ -- Ritesh Raj Sarraf <rrs@debian.org>  Sat, 08 Jan 2011 21:57:56 +0545
+
 iscsitarget (1.4.20.2-1) unstable; urgency=low
 
   * New Upstream Bug Fix Release
