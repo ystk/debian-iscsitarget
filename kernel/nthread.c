@@ -6,6 +6,8 @@
  * This code is licenced under the GPL.
  */
 
+#include <linux/module.h>
+#include <linux/file.h>
 #include <linux/sched.h>
 #include <linux/file.h>
 #include <linux/kthread.h>
@@ -56,12 +58,12 @@ static struct iscsi_cmnd * iscsi_get_send_cmnd(struct iscsi_conn *conn)
 {
 	struct iscsi_cmnd *cmnd = NULL;
 
-	spin_lock(&conn->list_lock);
+	spin_lock_bh(&conn->list_lock);
 	if (!list_empty(&conn->write_list)) {
 		cmnd = list_entry(conn->write_list.next, struct iscsi_cmnd, list);
 		list_del_init(&cmnd->list);
 	}
-	spin_unlock(&conn->list_lock);
+	spin_unlock_bh(&conn->list_lock);
 
 	return cmnd;
 }
@@ -242,7 +244,7 @@ next_state:
 	case RX_CHECK_HDIGEST:
 		rx_hdigest(conn, RX_INIT_DATA);
 		if (conn->read_state != RX_INIT_DATA)
-			break;
+			return -EIO;
 	case RX_INIT_DATA:
 		cmnd_rx_start(cmnd);
 		conn->read_state = cmnd->pdu.datasize ? RX_DATA : RX_END;
@@ -261,6 +263,8 @@ next_state:
 			break;
 	case RX_CHECK_DDIGEST:
 		rx_ddigest(conn, RX_END);
+		if (conn->read_state != RX_END)
+			return -EIO;
 		break;
 	default:
 		eprintk("%d %d %x\n", res, conn->read_state, cmnd_opcode(cmnd));

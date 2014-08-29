@@ -44,11 +44,11 @@ void conn_info_show(struct seq_file *seq, struct iscsi_session *session)
 		switch (sk->sk_family) {
 		case AF_INET:
 			snprintf(buf, sizeof(buf),
-				 "%u.%u.%u.%u", NIPQUAD(inet_sk(sk)->inet_daddr));
+				 "%pI4", &inet_sk(sk)->inet_daddr);
 			break;
 		case AF_INET6:
 			snprintf(buf, sizeof(buf), "[%pI6]",
-				 &inet6_sk(sk)->daddr);
+				 &(sk)->sk_v6_daddr);
 			break;
 		default:
 			break;
@@ -218,7 +218,7 @@ void conn_close(struct iscsi_conn *conn)
 	if (test_and_clear_bit(CONN_ACTIVE, &conn->state))
 		set_bit(CONN_CLOSING, &conn->state);
 
-	spin_lock(&conn->list_lock);
+	spin_lock_bh(&conn->list_lock);
 	list_for_each_entry(cmnd, &conn->pdu_list, conn_list) {
 		set_cmnd_tmfabort(cmnd);
 		if (cmnd->lun) {
@@ -226,7 +226,7 @@ void conn_close(struct iscsi_conn *conn)
 			iscsi_cmnd_set_sense(cmnd, UNIT_ATTENTION, 0x6e, 0x0);
 		}
 	}
-	spin_unlock(&conn->list_lock);
+	spin_unlock_bh(&conn->list_lock);
 
 	nthread_wakeup(conn->session->target);
 }
@@ -241,8 +241,6 @@ int conn_add(struct iscsi_session *session, struct conn_info *info)
 		conn_close(conn);
 
 	err = iet_conn_alloc(session, info);
-	if (!err && conn)
-		err = -EEXIST;
 
 	return err;
 }
