@@ -1,0 +1,28 @@
+diff --git b/Makefile a/Makefile
+index fc7de9a..78d0596 100644
+--- b/Makefile
++++ a/Makefile
+@@ -66,10 +66,6 @@ kver_lk = $(shell [ `echo $(KVER) | egrep $(1)` ] && echo 1 || echo 0)
+ # base first the earlier patch sets will not need to be modified.
+ #
+ 
+-ifeq ($(call kver_lt,3,14,0),1)
+-	PATCHES := $(PATCHES) compat-3.13.patch
+-endif
+-
+ ifeq ($(call kver_lt,3,13,0),1)
+ 	PATCHES := $(PATCHES) compat-3.12.patch
+ endif
+diff --git b/kernel/block-io.c a/kernel/block-io.c
+index 00365b5..7c9ea21 100644
+--- b/kernel/block-io.c
++++ a/kernel/block-io.c
+@@ -87,7 +87,7 @@ blockio_make_request(struct iet_volume *volume, struct tio *tio, int rw)
+ 		}
+ 
+ 		/* bi_sector is ALWAYS in units of 512 bytes */
+-		bio->bi_iter.bi_sector = ppos >> 9;
++		bio->bi_sector = ppos >> 9;
+ 		bio->bi_bdev = bio_data->bdev;
+ 		bio->bi_end_io = blockio_bio_endio;
+ 		bio->bi_private = tio_work;
